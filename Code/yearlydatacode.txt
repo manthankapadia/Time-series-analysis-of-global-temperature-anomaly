@@ -1,0 +1,184 @@
+#Read the table
+tdata=read.table("yearlyprojectdata.txt", header=T)
+tdata
+atemp1=tdata$Anomalyintemp
+
+
+#creating time series object
+traindata1=ts(atemp1, start=c(1880,1), end=c(1987,1))
+traindata1
+
+#creating time plot
+plot(traindata1)
+
+#Applying differencing on the model
+diftrain=diff(traindata1)
+#plotting the difference model
+plot(diftrain)
+
+#Creating the Histogram
+hist(diftrain, xlab="yearly temperature anomaly", prob=TRUE, main="histogram")
+xfit=seq(min(diftrain), max(diftrain), length=40)
+yfit=dnorm(xfit, mean=mean(diftrain), sd=sd(diftrain))
+lines(xfit, yfit, col="blue", lwd=2)
+
+#Creating the QQ plot
+qqnorm(diftrain)
+qqline(coredata(diftrain), col=2)
+
+#Performing Normality test
+normalTest(diftrain, method=c("jb"))
+
+#Computing and plotting the ACF
+acf(coredata(diftrain), plot=T, lag=20)
+
+#Computing and plotting the PACF
+pacf(coredata(diftrain), plot=T, lag=15)
+
+#Computing Ljung-Box test for lag 6 and lag 12
+Box.test(coredata(diftrain), lag=6, type='Ljung')
+Box.test(coredata(diftrain), lag=12, type='Ljung')
+
+#Computing the AR(2) model for yearly data
+yearlyAR=arima(diftrain, order=c(2,0,0))
+yearlyAR
+
+#computing QQ plot for residual analysis for AR model
+qqnorm(yearlyAR$residuals)
+qqline(yearlyAR$residuals, col=2)
+
+#computing Ljung Box test for residual analysis for AR model
+Box.test(yearlyAR$residuals, lag=6, type='Ljung')
+Box.test(yearlyAR$residuals, lag=12, type='Ljung')
+
+#Computing the MA(2) model for yearly data
+yearlyMA=arima(diftrain, order=c(0,0,2))
+yearlyMA
+
+#computing QQ plot for residual analysis for MA model
+qqnorm(yearlyMA$residuals)
+qqline(yearlyMA$residuals, col=2)
+
+#Computing Ljung Box test for residual analysis for MA model
+Box.test(yearlyMA$residuals, lag=6, type='Ljung')
+Box.test(yearlyMA$residuals, lag=12, type='Ljung')
+
+#Computing the ARIMA(p,d,q) model for yearly data built using auto.arima function
+yearlyARIMA=auto.arima(coredata(traindata1), allowdrift=FALSE)
+yearlyARIMA
+
+#plottong the QQ plot
+qqnorm(yearlyARIMA$residuals)
+qqline(yearlyARIMA$residuals, col=2)
+
+#Performing Ljung Box test for residuals
+Box.test(yearlyARIMA$residuals, lag=6, type='Ljung')
+Box.test(yearlyARIMA$residuals, lag=12, type='Ljung')
+
+#Computing ARMA(2,0,2) model for yearly data
+yearlyARMA=arima(diftrain, order=c(2,0,2), method='ML', include.mean=T)
+yearlyARMA
+
+#Computing QQ plot for residual analysis for ARMA model built using arima function
+qqnorm(yearlyARIMA$residuals)
+qqline(yearlyARIMA$residuals, col=2)
+
+#Computing Ljung Box test for residual analysis for ARMA(2,0,2) model
+Box.test(yearlyARMA$residuals, lag=6, type='Ljung')
+Box.test(yearlyARMA$residuals, lag=12, type='Ljung')
+
+
+#computing ARMA(p,q) model using EACF function
+EACF(diftrain)
+
+#computing ARMA(1,3) model for yearly data
+yearlyARMA_eacf=arima(diftrain, order=c(1,0,3), method='ML', include.mean=T)
+yearlyARMA_eacf
+
+#Computing QQ plot for residual analysis for ARMA(1,0,3) model built using eacf function
+qqnorm(yearlyARMA_eacf$residuals)
+qqline(yearlyARMA_eacf$residuals, col=2)
+
+#Computing Ljung Box test for residual analysis for ARMA(1,0,3) model
+Box.test(yearlyARMA_eacf$residuals, lag=6, type='Ljung')
+Box.test(yearlyARMA_eacf$residuals, lag=12, type='Ljung')
+
+#computing ARMA(p,q) model for yearly data using auto.arima function
+yearlyARMA1=auto.arima(diftrain, max.P=8, max.Q=8, ic="aic")
+yearlyARMA1
+
+#Computing QQ plot for residual analysis for ARMA(0,0,2) model built using auto.arima function
+qqnorm(yearlyARMA1$residuals)
+qqline(yearlyARMA1$residuals, col=2)
+
+#Computing Ljung Box test for residual analysis for ARMA(0,0,2) model.
+Box.test(yearlyARMA1$residuals, lag=6, type='Ljung')
+Box.test(yearlyARMA1$residuals, lag=12, type='Ljung')
+
+#Loading the testing data 
+testdata=read.table("testingprojectdata.txt", header=T)
+observedatemp=testdata$Anomalyintemp
+observedatemp
+
+#predicting the value of AR model
+ar_predict=predict(yearlyAR, n.ahead=30, se.fit=T)
+ar_predict
+
+#predicting the value of MA(2) model
+ma_predict=predict(yearlyMA, n.ahead=30, se.fit=T)
+ma_predict
+
+#predicting the value of ARIMA(p,d,q) model
+arima_predict=predict(yearlyARIMA, n.ahead=30, se.fit=T)
+arima_predict
+
+#predicting the value of ARMA(2,2) model
+arma_predict=predict(yearlyARMA, n.ahead=30, se.fit=T)
+arma_predict
+
+#predicting the value of ARMA(p,q) model built through EACF function
+eacfarma_predict=predict(yearlyARMA_eacf, n.ahead=30, se.fit=T)
+eacfarma_predict
+
+#predicting the value of ARMA(p,q) model built through auto.arima function
+arma_predict1=predict(yearlyARMA1, n.ahead=30, se.fit=T)
+arma_predict1
+
+#Loading the new data with prdicted value in it
+predictionvalue=read.table("predictiondata.csv", header=T, sep=',')
+predictionvalue
+observedatemp=predictionvalue$Anomalyintemp
+observedatemp
+
+#Computing the MAE value for AR(2) model
+predictedar=predictionvalue[,4]
+mae_ar=sum(abs(observedatemp-predictedar))/nrow(testdata)
+mae_ar
+
+#Computing the MAE value for MA(2) model
+predictedma=predictionvalue[,6]
+mae_ma=sum(abs(observedatemp-predictedma))/nrow(testdata)
+mae_ma
+
+#Computing the MAE value for ARIMA(p,d,q) model
+predictedarima=predictionvalue[,8]
+mae_arima=sum(abs(observedatemp-predictedarima))/nrow(testdata)
+mae_arima
+
+#Computing the MAE value for ARMA(2,0,2) model
+predictedarma=predictionvalue[,10]
+mae_arma=sum(abs(observedatemp-predictedarma))/nrow(testdata)
+mae_arma
+
+#Computing the MAE value for ARMA(1,0,3) model
+predictedeacfarma=predictionvalue[,12]
+mae_eacfarma=sum(abs(observedatemp-predictedeacfarma))/nrow(testdata)
+mae_eacfarma
+
+#Computing the MAE value for ARMA(0,0,2) model built using auto.arima
+predictedarma1=predictionvalue[,14]
+mae_autoarma=sum(abs(observedatemp-predictedarma1))/nrow(testdata)
+mae_autoarma
+
+#Plotting the forecast to predict the future
+plot(forecast(yearlyARMA_eacf))

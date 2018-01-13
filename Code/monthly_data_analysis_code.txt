@@ -1,0 +1,236 @@
+Code for monthly data analysis.
+
+  # Read the project data /Load the training data in R
+>   tdata= read.table("/Users/arpithajayarama/Desktop/projectdata.txt",header=T)
+
+
+>  # Read the temperature Anamaly in a variable.
+>   atemp1=tdata$Anamolyintemp
+
+>  # creating time series object
+>  traindata1=ts(atemp1 , start=c(1880,1), end=c(1990,12),freq=12)
+
+
+> #plot the time series object for the mode.
+> plot(taindata1)
+
+> # Applying Dfferencing on the modle 
+> diftrain = diff(traindata1)
+
+> # Plot the differenced model
+> plot(diftrain)
+
+> # Basic statistics for the differenced data.
+> basicStats(diftrain)
+
+>#Plot the Histogram graph and check for the normality of the distribution.
+> hist(diftrain, xlab="Montly temperature anamoly", prob=TRUE, main="histogram")
+> xfit=seq(min(diftrain), max(diftrain), length=40)
+> yfit=dnorm(xfit, mean=mean(diftrain), sd=sd(diftrain))
+> lines(xfit, yfit, col="blue", lwd=2)
+
+>#Plot the QQ plot to check the normality
+> qqnorm(diftrain)
+> qqline(distrain , col=2)
+
+>#Perform normality test
+>normalTest(distrain , method=c(“jb”))
+
+> #Plot ACF 
+> acf(coredata(diftrain) , lag=15)
+
+> #plot PACF
+pacf(coredata(diftrain) , lag=15)
+
+>#Confirm of serial correlation by performing Ljung-Box test.
+>Box.test(coredata(distrain),lag=6,type=‘Ljung’)
+>Box.test(coredata(distrain),lag=12,type=‘Ljung’)
+
+>#Bulidiing the analysis models
+
+> #Model for AR(2)
+> mAR1=arima(diftrain ,order=c(2,0,0))
+> mAR1
+
+> #Model for AR(5)
+> mAR2=arima(diftrain ,order=c(5,0,0))
+> mAR2
+
+>#Build MA model 
+>mMA1=arima(distrain , order=c(0,0,1)
+>mMA1
+
+>#ARIMA model using auto.arima function
+>monthlyARIMA=auto.arima(coredata(traindata1 ), allowdrift=FALSE)
+>monthlyARIMA
+
+>#ARMA model with p=2 and q=1
+>monthlyARMA=arima(diftrain ,order=c(2,0,1),method=‘ML’, include.mean=T)
+>monthlyARMA
+
+>#ARMA model with p=5 and q=1
+>monthlyARMA1=arima(diftrain ,order=c(5,0,1),method=‘ML’, include.mean=T)
+>monthlyARMA1
+
+>#Building ARMA model with p=1 and q=2 by getting ECF value. 
+>EACF(diftrain)
+>monthlyARMA2=arima(diftrain ,order=c(1,0,2),method=‘ML’, include.mean=T)
+>monthlyARMA2
+
+>#Building ARMA model with auto.arima.
+>monthlyARMA3=auto.arima(coredata(distrain),max.P=8, max.Q=8 ,ic=“aic” , allowdrift=FALSE)
+>monthlyARMA3
+
+> # Residual Analysis for the models
+> #Computing QQplot for residual analysis for AR(2,0,0) model.
+> qqnorm(mAR1$reseduals)
+> qqline(mAR1$residuals ,col=2)
+> #Computing Ljung Box test for residual analysis for AR model.
+> Box.test(mAR1$residuals,lag=6,type='Ljung')
+>Box.test(mAR1$residuals,lag=12,type='Ljung')
+
+> #Computing QQplot for residual analysis for AR(5,0,0) model.
+> qqnorm(mAR2$residuals)
+> qqline(mAR2$residuals ,col=2)
+> #Computing Ljung Box test for residual analysis for AR model.
+> Box.test(mAR2$residuals,lag=6,type='Ljung')
+> Box.test(mAR2$residuals,lag=12,type='Ljung')
+
+> #Computing QQplot for residual analysis for MA model.
+> qqnorm(mMA1$residuals)
+> qqline(mMA1$residuals ,col=2)
+> 
+> #Computing Ljung Box test for residual analysis for MA model.
+> Box.test(mMA1$residuals,lag=9,type='Ljung')
+>Box.test(mMA1$residuals,lag=12,type='Ljung')
+
+> #Computing QQplot for residual analysis for ARIMA model.
+> qqnorm(monthlyARIMA$residuals)
+> qqline( monthlyARIMA$residuals,col=2)
+> #Computing Ljung Box test for residual analysis for ARIMA model.
+> Box.test(monthlyARIMA$residuals,lag=6,type='Ljung')
+> Box.test(monthlyARIMA$residuals,lag=12,type='Ljung')
+
+> #Computing QQplot for residual analysis for ARMA model.
+> qqnorm(monthlyARMA$residuals)
+> qqline( monthlyARMA$residuals,col=2)
+> #Computing Ljung Box test for residual analysis for ARMA model.
+> Box.test(monthlyARMA$residuals,lag=6,type='Ljung')
+> Box.test(monthlyARMA$residuals,lag=12,type='Ljung')
+
+> #Computing QQplot for residual analysis for ARMA model.
+> qqnorm(monthlyARMA1$residuals)
+> qqline(monthlyARMA1$residuals , col=2)
+> #Computing Ljung Box test for residual analysis for ARMA model.
+> Box.test(monthlyARMA1$residuals,lag=6,type='Ljung')
+> Box.test(monthlyARMA1$residuals,lag=12,type='Ljung')
+
+> #Computing QQplot for residual analysis for ARMA model.
+> qqnorm(monthlyARMA2$residuals)
+> qqline(monthlyARMA2$residuals , col=2) 
+> #Computing Ljung Box test for residual analysis for ARMA model.
+> Box.test(monthlyARMA2$residuals,lag=6,type='Ljung')
+>Box.test(monthlyARMA2$residuals,lag=12,type='Ljung')
+
+> #Computing QQplot for residual analysis for ARMA model.
+> qqnorm(monthlyARMA3$residuals)
+> qqline(monthlyARMA3$residuals , col=2)
+> #Computing Ljung Box test for residual analysis for ARMA model.
+> Box.test(monthlyARMA3$residuals,lag=6,type='Ljung')
+> Box.test(monthlyARMA3$residuals,lag=12,type='Ljung')
+
+>#Standerdised res plot
+-> tsdiag(monthlyARIMA)
+ res =monthlyARIMA$resid
+
+>#Analyse if the residuals are normally distributed.
+
+> hist(res, xlab="Residuals", prob=TRUE, main="histogram")
+> xfit=seq(min(res), max(res), length=40)
+> yfit=dnorm(xfit, mean=mean(res), sd=sd(res))
+> lines(xfit, yfit, col="blue", lwd=2)
+
+>#Comparing the model based on MAE values:
+> #predicting the value for AR model
+> ar_predict=predict(mAR1, n.ahead=314, se.fit=T)
+> ar_predict
+
+> #predicting the value for AR model
+> ar_predict=predict(mAR2, n.ahead=314, se.fit=T)
+> ar_predict1
+
+> #predicting the value for MA model
+> ar_predict2=predict(mMA1, n.ahead=314, se.fit=T)
+> ar_predict2
+
+> #predicting the value for ARIMA model
+> ar_predict3=predict(monthlyARIMA, n.ahead=314, se.fit=T)
+> ar_predict3
+
+> #predicting the value for ARMA model
+> ar_predict4=predict(monthlyARMA, n.ahead=314, se.fit=T)
+> ar_predict4
+
+> #predicting the value for ARMA model
+> ar_predict5=predict(monthlyARMA1, n.ahead=314, se.fit=T)
+> ar_predict5
+
+> #predicting the value for ARMA model
+> ar_predict6=predict(monthlyARMA2, n.ahead=314, se.fit=T)
+> ar_predict6
+
+> #predicting the value for ARMA model
+> ar_predict7=predict(monthlyARMA3, n.ahead=314, se.fit=T)
+> ar_predict7
+
+>Loading the predicted and differenced values file.
+>predictionval=read.table("/Users/arpithajayarama/Documents/predictedval.csv",header=T,sep=',')
+> predictionval
+>observedval=predictionval[ , 2]
+
+>#MAE for AR model
+>par=predictionval[ ,4]
+>mae_ar=sum(abs(observedval-par)/nrow(testdata))
+>mae_ar
+
+>#MAE for AR model
+>par1=predictionval[ ,6]
+>mae_ar1=sum(abs(observedval-par1)/nrow(testdata))
+>mae_ar1
+
+>#MAE for MA model
+>par2=predictionval[ ,8]
+>mae_ma=sum(abs(observedval-par2)/nrow(testdata))
+>mae_ma
+
+>#MAE for ARIMA model
+>par3=predictionval[ ,10]
+>mae_arima=sum(abs(observedval-par3)/nrow(testdata))
+>mae_arima
+
+>#MAE for ARMA model
+>par4=predictionval[ ,12]
+>mae_arma=sum(abs(observedval-par4)/nrow(testdata))
+>mae_arma
+
+>#MAE for ARMA model
+>par5=predictionval[ ,14]
+>mae_arma1=sum(abs(observedval-par5)/nrow(testdata))
+>mae_arma1
+
+>#MAE for ARMA model
+>par6=predictionval[ ,16]
+>mae_arma2=sum(abs(observedval-par6)/nrow(testdata))
+>mae_arma2
+
+>#MAE for ARMA model
+>par7=predictionval[ ,18]
+>mae_arma3=sum(abs(observedval-par7)/nrow(testdata))
+>mae_arma3
+
+>Exponential smoothing applied on the data set.
+>model=ets(diftrain)
+>f1=forecast(model,h=315)
+> plot(f1)
+
+
